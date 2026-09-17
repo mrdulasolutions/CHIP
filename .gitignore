@@ -1,0 +1,29 @@
+.cursor/
+.DS_Store
+._*
+
+# Runtime and models live on the physical drive, not in git
+bin/llamafile
+bin/llamafile.exe
+bin/pdf/
+models/*.gguf
+models/chip.gguf
+tmp/
+__pycache__/
+*.pyc
+.chip-installed
+
+# RAG index and optional large cloned corpora
+rag/index/*
+!rag/index/.gitkeep
+rag/corpus/doctrine/
+rag/corpus/playbooks/shtf/
+rag/corpus/comms/
+rag/corpus/medical/
+rag/corpus/water/
+rag/corpus/food/
+rag/corpus/wildlife/
+rag/corpus/sustainability/
+rag/corpus/faith/
+rag/corpus/vehicle/
+rag/corpus/reloading/
