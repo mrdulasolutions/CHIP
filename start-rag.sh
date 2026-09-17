@@ -10,9 +10,17 @@ EMBED_PORT="${EMBED_PORT:-8081}"
 CHAT_BASE="http://127.0.0.1:${CHAT_PORT}"
 START_TIMEOUT="${RAG_START_TIMEOUT:-180}"
 RAG_CHAT_MODEL="${RAG_CHAT_MODEL:-chip}"
-# Large chat.gguf models often advertise 100k+ ctx; with embed on :8081 that can OOM 16 GB hosts
-# and stall the browser SSE stream ("Stream resume produced no new bytes").
-export CHIP_CTX_SIZE="${CHIP_CTX_SIZE:-8192}"
+# Context RAM tradeoff (embed on :8081 + chat KV cache):
+#   chat 8B + huge default ctx → OOM / "Stream resume produced no new bytes" on 16 GB
+#   Web UI file uploads inject the full file into the prompt (not corpus tools) — needs headroom
+# Override: CHIP_CTX_SIZE=8192 (8 GB text-only), 32768+ (large uploads on 16 GB+)
+if [[ -n "${CHIP_CTX_SIZE:-}" ]]; then
+  export CHIP_CTX_SIZE
+elif [[ "$RAG_CHAT_MODEL" == "chat" ]]; then
+  export CHIP_CTX_SIZE=8192
+else
+  export CHIP_CTX_SIZE=16384
+fi
 export CHIP_PARALLEL="${CHIP_PARALLEL:-1}"
 mkdir -p "$ROOT/tmp"
 
@@ -129,7 +137,8 @@ Environment:
   PORT / EMBED_PORT       Chat and embed ports (default 8080 / 8081)
   RAG_START_TIMEOUT       Seconds to wait for servers (default 180)
   RAG_CHAT_MODEL          Profile for chat server (default: chip; use chat on 16 GB+ only)
-  CHIP_CTX_SIZE           Passed to start.sh --ctx-size (default: 8192 for RAG)
+  CHIP_CTX_SIZE           Passed to start.sh --ctx-size (default: 16384 chip, 8192 chat)
+                          Use 32768+ for browser file uploads; 8192 for 8 GB grid-down text chat
   CHIP_PARALLEL           Passed to start.sh --parallel (default: 1 for RAG)
 EOF
     exit 0

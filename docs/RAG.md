@@ -41,8 +41,10 @@ Index: single file **`rag/index/knowledge.db`** (SQLite, float32 blobs + Python 
 
 **Option A — one command (background):**
 ```bash
-./start-rag.sh                    # chip 3B, ctx 8192, 1 slot (fits 16 GB + embed)
-RAG_CHAT_MODEL=chat ./start-rag.sh   # 8B chat only if you have headroom (16 GB+)
+./start-rag.sh                    # chip 3B, ctx 16384, 1 slot (fits 16 GB + embed)
+CHIP_CTX_SIZE=32768 ./start-rag.sh   # browser file uploads / long pasted docs (16 GB+)
+CHIP_CTX_SIZE=8192 ./start-rag.sh     # 8 GB hosts: text RAG only, skip large uploads
+RAG_CHAT_MODEL=chat ./start-rag.sh   # 8B chat only if you have headroom (16 GB+; ctx 8192)
 ./scripts/rag-query.sh "how do I disinfect water?"
 ./scripts/rag-query.sh "signs of hypothermia" --chat
 ./start-rag.sh stop
@@ -69,6 +71,8 @@ Or RAG-augmented chat (`--chat` needs chat on 8080):
 
 Browser UI at http://127.0.0.1:8080 still has **read/grep tools** on `rag/corpus/`; RAG adds **semantic** retrieval from the index.
 
+**File uploads vs tools:** Drag-and-drop / paperclip **`.txt`** in the web UI is copied into the **prompt** (counts against `--ctx-size`). Files already on the drive under `rag/corpus/` can be fetched with **`read_file`** / **`grep_search`** (tool output also uses context, but you can query slices). For multi‑MB documents, prefer corpus + tools or RAG retrieval over uploading the whole file.
+
 ## RAM (8 GB hosts)
 
 - Run **ingest** at home, then you can stop the embed server and use only chat + prebuilt `knowledge.db` for queries (embed server still needed at query time for semantic search).
@@ -85,6 +89,7 @@ System instructions for `--chat`: `rag/prompts/system-rag.txt` (cite sources, me
 | `Embedding server not reachable` | `./start-embed.sh` on 8081 |
 | Empty / weak answers | Re-run ingest; add corpus; increase `RAG_TOP_K` |
 | Wrong facts | Model may hallucinate — prefer context-only output; verify against source files |
+| `request exceeds the available context size` | Upload too large for `CHIP_CTX_SIZE`. Restart with `CHIP_CTX_SIZE=32768` (16 GB+), or use `rag/corpus/` + read/grep, or `rag-query.sh` for snippets |
 | `python3` missing | Ingest/query need Python 3 (common on macOS/Linux; install once on Windows for prep) |
 
 ## What we deliberately skip

@@ -85,7 +85,7 @@ chmod +x build-chip.sh
 ./build-chip.sh /Volumes/CHIP --full
 ```
 
-Then on any computer: double-click **`Launch CHIP.command`** (Mac), **`Launch CHIP.bat`** (Windows), or **`./Launch CHIP.sh`** (Linux). See [docs/AUTOSTART.md](docs/AUTOSTART.md).
+Then on any computer: open **[QUICKSTART.md](QUICKSTART.md)** (or **`00-READ-ME-FIRST.txt`** on Windows), then double-click **`Launch CHIP`** (Mac `.command`, Windows `.bat`, Linux `./Launch CHIP.sh`). See [docs/user/AUTOSTART.md](docs/user/AUTOSTART.md).
 
 ### Coding agents
 
@@ -129,7 +129,9 @@ Large fetched corpora stay on the drive and are **gitignored**; only scripts and
 | Step | macOS | Windows | Linux |
 |------|--------|---------|--------|
 | Mount drive | `/Volumes/CHIP` | `D:\CHIP` (letter varies) | `/media/$USER/CHIP` |
-| Launch | `Launch CHIP.command` | `Launch CHIP.bat` | `./Launch\ CHIP.sh` |
+| Launch (RAG if built) | `Launch CHIP.command` | `Launch CHIP.bat` | `./Launch\ CHIP.sh` |
+| Chat only | `Launch Chat.command` | `Launch Chat.bat` | `./Launch\ Chat.sh` |
+| Stop | `Stop CHIP.command` | `Stop CHIP.bat` | `./Stop\ CHIP.sh` |
 | Browser | http://127.0.0.1:8080 | same | same |
 | RAG CLI | `./scripts/rag-query.sh "question"` | Git Bash or WSL | `./scripts/rag-query.sh` |
 
@@ -137,20 +139,36 @@ If the binary is blocked: macOS → remove quarantine (`xattr -d com.apple.quara
 
 ---
 
-## Repository layout
+## Drive layout (what you see on the SSD)
+
+Root is kept to **obvious entry points**; installers live under **`setup/`** (thin wrappers at root preserve old paths and work on **exFAT**, where symlinks are unreliable).
 
 ```
-CHIP/
-  build-chip.sh          # one-shot install to USB
-  AGENTS.md              # agent playbook
-  Launch CHIP.*          # double-click launchers
+CHIP/  (drive root — start here)
+  00-READ-ME-FIRST.txt   # plain-text quick start (Windows)
+  QUICKSTART.md          # one-page human quick start
+  README.md              # full manual
+  AGENTS.md              # coding-agent playbook (repo / drive)
+
+  Launch CHIP.*          # RAG + chat when index exists
+  Launch Chat.*          # chat only (no embed server)
+  Stop CHIP.*            # stop background RAG servers
+
+  start-rag.sh           # grid-down RAG launcher (terminal)
+  start.sh / start.bat   # chat server
+  start-embed.sh         # embedding server (:8081)
+  build-chip.sh          # → setup/build-chip.sh
+  download-*.sh          # → setup/download-*.sh
+
+  setup/                 # online install & downloads (see setup/README.md)
+  scripts/               # fetch, ingest, rag-query, pdf-to-text
   bin/                   # llamafile + pdf tools (not in git)
   models/                # *.gguf on drive only
   rag/corpus/            # documents
   rag/index/             # knowledge.db (built locally)
-  scripts/               # fetch, ingest, rag-query, pdf-to-text
-  docs/                  # RAG, corpus, autostart, capabilities
-  start.sh / start.bat
+  docs/user/             # autostart, shortcuts
+  docs/                  # RAG, corpus sources, capabilities (technical)
+  tmp/                   # logs & pid files
 ```
 
 ---
@@ -165,7 +183,8 @@ CHIP/
 | Slow model load | USB 3 port; confirm SSD + exFAT |
 | RAG empty / errors | Re-run ingest; ensure `start-embed.sh` on :8081 |
 | `start-rag.sh` exits instantly / browser won’t load | `./start-rag.sh stop` then `./start-rag.sh` again (waits up to ~3 min). Check `tmp/chat.log` if ports **8080/8081** are busy; quit other llamafile copies or use `EMBED_PORT=8082 PORT=8083` |
-| Browser: **“Stream resume produced no new bytes”** | Usually chat ran out of RAM mid-stream (embed on :8081 + **chat.gguf** 8B with huge default context). `./start-rag.sh stop` then `./start-rag.sh` (defaults to **chip** 3B, `CHIP_CTX_SIZE=8192`, `CHIP_PARALLEL=1`). For 8B chat with RAG: `RAG_CHAT_MODEL=chat CHIP_CTX_SIZE=8192 ./start-rag.sh` on **16 GB+** only. Check `memory_pressure` / Activity Monitor; quit Ollama or other LLM apps. |
+| Browser: **“Stream resume produced no new bytes”** | Usually chat ran out of RAM mid-stream (embed on :8081 + **chat.gguf** 8B with huge default context). `./start-rag.sh stop` then `./start-rag.sh` (defaults to **chip** 3B, `CHIP_CTX_SIZE=16384`, `CHIP_PARALLEL=1`). For 8B chat with RAG: `RAG_CHAT_MODEL=chat ./start-rag.sh` on **16 GB+** only (ctx defaults to 8192). Check `memory_pressure` / Activity Monitor; quit Ollama or other LLM apps. |
+| Browser: **request exceeds the available context size** | Paperclip uploads put the **entire file** in the prompt (separate from `read_file` on `rag/corpus/`). Defaults cap ctx at **16384** for **chip**; large files need more RAM: `./start-rag.sh stop` then `CHIP_CTX_SIZE=32768 ./start-rag.sh` (**16 GB+**). Or copy into `rag/corpus/` and ask to read/grep in chunks. Tight RAM: `CHIP_CTX_SIZE=8192 ./start-rag.sh` (text chat only, skip big uploads). |
 | `./start.sh` alone loads **chat** not **chip** | If `models/chat.gguf` exists it wins over chip — use `./start.sh chip` or remove/rename `chat.gguf` on tight RAM |
 | Missing model | Run `./download-chip-model.sh` (or add `tiny.gguf` / `chat.gguf` manually) |
 

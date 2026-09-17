@@ -1,0 +1,35 @@
+CHIP — Crisis Host-Independent Preparedness
+===========================================
+
+You are on the portable CHIP drive. Start here (no markdown viewer needed).
+
+GRID-DOWN (use the computer with the drive plugged in)
+------------------------------------------------------
+1. Open this drive in File Explorer / Finder.
+2. Double-click:
+     Launch CHIP.bat     (Windows)  — RAG + chat if the index was built
+     Launch CHIP.command (macOS)
+     Launch Chat.bat     — chat only, lighter
+3. Open a browser:  http://127.0.0.1:8080
+4. To stop:  Stop CHIP.bat  (or close the CHIP command windows)
+
+If Windows blocks the program: choose "More info" then "Run anyway".
+
+FIRST-TIME SETUP (internet required, once at home)
+--------------------------------------------------
+Use Git Bash or WSL on Windows, Terminal on Mac/Linux:
+
+  ./build-chip.sh /path/to/this/drive --full
+
+Or read QUICKSTART.md and README.md on this drive.
+
+FOLDERS
+-------
+  Launch CHIP / Launch Chat / Stop CHIP  — start here
+  setup\       — downloads and build-chip (online setup)
+  scripts\     — corpus and RAG tools
+  models\      — AI model files (.gguf)
+  rag\corpus\  — your documents
+  docs\        — help files
+
+Full details: README.md

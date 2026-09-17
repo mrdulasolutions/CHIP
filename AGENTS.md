@@ -9,7 +9,7 @@ Repository: [github.com/mrdulasolutions/CHIP](https://github.com/mrdulasolutions
 ```bash
 git clone https://github.com/mrdulasolutions/CHIP.git
 cd CHIP
-chmod +x build-chip.sh download-*.sh start*.sh scripts/*.sh
+chmod +x build-chip.sh download-*.sh start*.sh scripts/*.sh setup/*.sh
 ```
 
 ## 2. Detect USB target
@@ -84,4 +84,5 @@ Grid-down launcher: `./start-rag.sh` (embed + chat in background).
 
 - End users: [README.md](README.md)
 - RAG details: [docs/RAG.md](docs/RAG.md)
-- Autostart limits: [docs/AUTOSTART.md](docs/AUTOSTART.md)
+- Human quick start: [QUICKSTART.md](QUICKSTART.md) · autostart: [docs/user/AUTOSTART.md](docs/user/AUTOSTART.md)
+- Install scripts live in `setup/`; root `build-chip.sh` and `download-*.sh` are exFAT-safe wrappers.

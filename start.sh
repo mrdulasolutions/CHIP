@@ -21,7 +21,8 @@ Usage: ./start.sh [tiny|chat|chip] [tui]
 Environment:
   PORT           HTTP port for --server (default: 8080)
   LLAMA_NGL      GPU layers, e.g. 999 for NVIDIA/AMD offload (unset = llamafile default)
-  CHIP_CTX_SIZE  Cap prompt context for --server (e.g. 8192; unset = model default)
+  CHIP_CTX_SIZE  Cap prompt context for --server (unset = model default, often 128k+)
+                 Web UI .txt uploads are injected into the prompt — raise ctx for large files
   CHIP_PARALLEL  Server slots for --server (e.g. 1; unset = llamafile auto)
 EOF
 }
