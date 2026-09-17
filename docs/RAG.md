@@ -4,7 +4,7 @@ Semantic search over `rag/corpus/` using the **same llamafile 0.10.6 binary** as
 
 | Service | Port | Model |
 |---------|------|--------|
-| Chat | 8080 | `models/chat.gguf`, `models/chip.gguf`, or `models/tiny.gguf` |
+| Chat | 8080 | **`chip`** via `./start-rag.sh` (default); or `chat` / `tiny` via `./start.sh` |
 | Embeddings | 8081 | `models/embed.gguf` (bge-small-en-v1.5 Q4_K_M) |
 
 Index: single file **`rag/index/knowledge.db`** (SQLite, float32 blobs + Python cosine search). No Chroma, no Ollama, no encoderfile.
@@ -41,7 +41,8 @@ Index: single file **`rag/index/knowledge.db`** (SQLite, float32 blobs + Python 
 
 **Option A — one command (background):**
 ```bash
-./start-rag.sh
+./start-rag.sh                    # chip 3B, ctx 8192, 1 slot (fits 16 GB + embed)
+RAG_CHAT_MODEL=chat ./start-rag.sh   # 8B chat only if you have headroom (16 GB+)
 ./scripts/rag-query.sh "how do I disinfect water?"
 ./scripts/rag-query.sh "signs of hypothermia" --chat
 ./start-rag.sh stop
@@ -53,7 +54,7 @@ Index: single file **`rag/index/knowledge.db`** (SQLite, float32 blobs + Python 
 ./start-embed.sh
 
 # Terminal 2
-./start.sh chat
+./start.sh chip    # prefer chip with embed; use chat only on 16 GB+
 ```
 
 Then query context only (embed server required):

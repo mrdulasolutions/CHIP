@@ -19,8 +19,10 @@ Usage: ./start.sh [tiny|chat|chip] [tui]
   tui         Terminal chat instead of browser UI
 
 Environment:
-  PORT        HTTP port for --server (default: 8080)
-  LLAMA_NGL   GPU layers, e.g. 999 for NVIDIA/AMD offload (unset = llamafile default)
+  PORT           HTTP port for --server (default: 8080)
+  LLAMA_NGL      GPU layers, e.g. 999 for NVIDIA/AMD offload (unset = llamafile default)
+  CHIP_CTX_SIZE  Cap prompt context for --server (e.g. 8192; unset = model default)
+  CHIP_PARALLEL  Server slots for --server (e.g. 1; unset = llamafile auto)
 EOF
 }
 
@@ -95,6 +97,14 @@ elif command -v nvidia-smi >/dev/null 2>&1; then
   GPU_ARGS=(-ngl 999)
 fi
 
+SERVER_EXTRA=()
+if [[ -n "${CHIP_CTX_SIZE:-}" ]]; then
+  SERVER_EXTRA+=(--ctx-size "$CHIP_CTX_SIZE")
+fi
+if [[ -n "${CHIP_PARALLEL:-}" ]]; then
+  SERVER_EXTRA+=(--parallel "$CHIP_PARALLEL")
+fi
+
 run_llamafile() {
   if [[ -x "$BIN" ]]; then
     exec "$BIN" "$@"
@@ -113,5 +123,6 @@ else
   echo "Loading $(basename "$MODEL")..."
   echo "Open http://127.0.0.1:${PORT} when ready (Ctrl+C to stop)."
   echo "Documents: rag/corpus/ (.md/.txt; PDF: download-pdf-tools.sh then scripts/pdf-to-text.sh)."
-  run_llamafile -m "$MODEL" ${GPU_ARGS[@]+"${GPU_ARGS[@]}"} --server --host 127.0.0.1 --port "$PORT" ${DOC_TOOL_ARGS[@]+"${DOC_TOOL_ARGS[@]}"}
+  run_llamafile -m "$MODEL" ${GPU_ARGS[@]+"${GPU_ARGS[@]}"} --server --host 127.0.0.1 --port "$PORT" \
+    ${SERVER_EXTRA[@]+"${SERVER_EXTRA[@]}"} ${DOC_TOOL_ARGS[@]+"${DOC_TOOL_ARGS[@]}"}
 fi

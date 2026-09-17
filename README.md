@@ -164,6 +164,9 @@ CHIP/
 | Linux USB `noexec` | Remount with `exec`, or copy binary to `/tmp` |
 | Slow model load | USB 3 port; confirm SSD + exFAT |
 | RAG empty / errors | Re-run ingest; ensure `start-embed.sh` on :8081 |
+| `start-rag.sh` exits instantly / browser won’t load | `./start-rag.sh stop` then `./start-rag.sh` again (waits up to ~3 min). Check `tmp/chat.log` if ports **8080/8081** are busy; quit other llamafile copies or use `EMBED_PORT=8082 PORT=8083` |
+| Browser: **“Stream resume produced no new bytes”** | Usually chat ran out of RAM mid-stream (embed on :8081 + **chat.gguf** 8B with huge default context). `./start-rag.sh stop` then `./start-rag.sh` (defaults to **chip** 3B, `CHIP_CTX_SIZE=8192`, `CHIP_PARALLEL=1`). For 8B chat with RAG: `RAG_CHAT_MODEL=chat CHIP_CTX_SIZE=8192 ./start-rag.sh` on **16 GB+** only. Check `memory_pressure` / Activity Monitor; quit Ollama or other LLM apps. |
+| `./start.sh` alone loads **chat** not **chip** | If `models/chat.gguf` exists it wins over chip — use `./start.sh chip` or remove/rename `chat.gguf` on tight RAM |
 | Missing model | Run `./download-chip-model.sh` (or add `tiny.gguf` / `chat.gguf` manually) |
 
 GPU: set `LLAMA_NGL=999` (NVIDIA) or `LLAMA_NGL=0` for CPU-only. Apple Silicon uses Metal when available.
